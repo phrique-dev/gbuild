@@ -14,9 +14,9 @@ from gbuild import Builder
 
 build = Builder("g++")
 build.search_sources("src")
-build.build_executable("build/release", "build.exe")
+build.build_executable("executable", "build/release")
 ```
-This script search for C/C++ files and build an executable called `build.exe` at path  `build/release`
+This script search for C/C++ files and build an executable called `executable` at path `build/release`
 <br>
 ### Adding flags.
 The `Builder` class, has a method called `set_flags()`, that you can pass valid flags based on our compiler. <br>
@@ -27,7 +27,7 @@ from gbuild import Builder
 build = Builder("g++")
 build.set_flags("-Wall", "-Wextra", "-std=c++20")
 build.search_sources("src")
-build.build_executable("build/release", "build.exe")
+build.build_executable("executable", "build/debug")
 ```
 
 ### Including Headers
@@ -38,7 +38,7 @@ from gbuild import Builder
 build = Builder("g++")
 build.include("include")
 build.search_sources("src")
-build.build_executable("build/release", "build.exe")
+build.build_executable("executable", "build/debug")
 ```
 
 ### Linking
