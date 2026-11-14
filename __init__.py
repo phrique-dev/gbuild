@@ -7,7 +7,7 @@ by: voidksks
 import os
 
 # constants
-COLOR_RED = "\033[31m"
+RED = "\033[31m"
 YELLOW = "\033[33m"
 END = "\033[m"
 
@@ -16,40 +16,40 @@ C_SUFFIXES = (".c",)
 SOURCE_SUFFIXES = CPP_SUFFIXES + C_SUFFIXES
 
 # gbuild methods
-def log_error(msg: str):
-    print(f"{COLOR_RED}[GBUILD]: {msg}{END}")
+def gb_log_error(msg: str):
+    print(f"{RED}[GBUILD]: {msg}{END}")
 
-def log_warning(msg: str):
-    print(f"{COLOR_RED}[GBUILD]: {msg}{END}")
+def gb_log_warning(msg: str):
+    print(f"{RED}[GBUILD]: {msg}{END}")
 
-def _try_compile(args: list[str]):
+def gb_try_compile(args: list[str]):
     import subprocess
     try:
         subprocess.run(args, check=True)
     except subprocess.CalledProcessError:
-        log_error("Compile error...")
+        gb_log_error("Compile error...")
     except OSError:
-        log_warning("Cannot run the command...")
+        gb_log_warning("Cannot run the command...")
 
-def _search_dir(target: str, path=".", recursive=False):
+def gb_search_dir(target: str, path=".", recursive=False):
     with os.scandir(path) as entries:
         for item in entries:
             if item.is_dir() and item.name == target:
                 return True
             if recursive and item.is_dir():
-                _search_dir(target, item.path)
+                gb_search_dir(target, item.path)
     return False
 
-def _search_file(target: str, path=".", recursive=False):
+def gb_search_file(target: str, path=".", recursive=False):
     with os.scandir(path) as entries:
         for item in entries:
             if item.is_file() and item.name == target:
                 return True
             if recursive and item.is_file():
-                _search_file(target, item.path)
+                gb_search_file(target, item.path)
     return False
 
-def is_empty(iterable):
+def gb_is_empty(iterable):
     return len(iterable) == 0
 
 # "private" class for grouping all flags and stuff
@@ -79,23 +79,23 @@ class Builder():
     def includes(self):
         return self._cmd.includes
 
-    def set_compiler(self, name: str):
-        self._cmd.compiler = name
-
     def flags(self):
         return self._cmd.flags
 
     # setters and methods
+    def set_compiler(self, name: str):
+        self._cmd.compiler = name
+
     def set_executable_name(self, name: str):
         from sys import platform
-        if is_empty(self._cmd.out):
+        if gb_is_empty(self._cmd.out):
             if platform == "win32" and ".exe" not in name:
                 self._cmd.out = name + ".exe"
             else:
                 self._cmd.out = name
 
     def include(self, path: str):
-        if not is_empty(path):
+        if not gb_is_empty(path):
             p = f"-I{path}"
             self._cmd.includes.append(p)
 
@@ -122,18 +122,18 @@ class Builder():
         """
         Build an executable to a given build path
         """
-        if is_empty(self._cmd.compiler):
-            log_error("Cannot detect compiler... Compilation failed!")
+        if gb_is_empty(self._cmd.compiler):
+            gb_log_error("Cannot detect compiler... Compilation failed!")
             return
 
-        if is_empty(executablename) and self._cmd.out is not None:
+        if gb_is_empty(executablename) and self._cmd.out is not None:
             executablename = self._cmd.out
 
-        if builddir != "." and not _search_dir(builddir):
+        if builddir != "." and not gb_search_dir(builddir):
             os.makedirs(builddir, exist_ok=True)
 
-        if is_empty(self._cmd.source_files):
-            log_error("No source files was specified...")
+        if gb_is_empty(self._cmd.source_files):
+            gb_log_error("No source files was specified...")
             return
 
         cmd = [self._cmd.compiler, *self._cmd.flags, *self._cmd.includes, *self._cmd.source_files]
@@ -141,6 +141,6 @@ class Builder():
             if "/" not in builddir:
                 builddir += "/"
             cmd += ["-o" ,f"{builddir}{executablename}"]
-            _try_compile(cmd)
+            gb_try_compile(cmd)
         else:
-            log_error("Executable name was not defined...")
+            gb_log_error("Executable name was not defined...")
